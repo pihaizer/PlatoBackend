@@ -1,5 +1,8 @@
-﻿namespace Backend.Models; 
+﻿using Microsoft.EntityFrameworkCore;
 
+namespace Backend.Models; 
+
+[Index(nameof(Value), IsUnique = true)]
 public class Tag {
     public long Id { get; set; }
     

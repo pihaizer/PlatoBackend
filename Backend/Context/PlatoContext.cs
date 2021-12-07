@@ -13,6 +13,8 @@ public class PlatoContext : DbContext {
     public DbSet<ClimbingRoute> Routes => Set<ClimbingRoute>();
     public DbSet<Like> Likes => Set<Like>();
     public DbSet<Send> Sends => Set<Send>();
+    public DbSet<ClimbingRouteBookmark> Bookmarks => Set<ClimbingRouteBookmark>();
     public DbSet<Comment> Comments => Set<Comment>();
     public DbSet<Tag> Tags => Set<Tag>();
+    public DbSet<ClimbingRouteModel> RouteModels => Set<ClimbingRouteModel>();
 }

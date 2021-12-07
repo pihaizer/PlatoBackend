@@ -3,6 +3,7 @@ using System;
 using Backend.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,10 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Backend.Migrations
 {
     [DbContext(typeof(PlatoContext))]
-    partial class PlatoContextModelSnapshot : ModelSnapshot
+    [Migration("20211206215820_Indexes")]
+    partial class Indexes
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -46,8 +48,8 @@ namespace Backend.Migrations
                     b.Property<string>("PictureUrl")
                         .HasColumnType("text");
 
-                    b.Property<string>("Setter")
-                        .HasColumnType("text");
+                    b.Property<long?>("SetterId")
+                        .HasColumnType("bigint");
 
                     b.Property<int>("Status")
                         .HasColumnType("integer");
@@ -56,29 +58,9 @@ namespace Backend.Migrations
 
                     b.HasIndex("ModelId");
 
+                    b.HasIndex("SetterId");
+
                     b.ToTable("Routes");
-                });
-
-            modelBuilder.Entity("Backend.Models.ClimbingRouteBookmark", b =>
-                {
-                    b.Property<long>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
-
-                    b.Property<long>("ClimbingRouteId")
-                        .HasColumnType("bigint");
-
-                    b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ClimbingRouteId");
-
-                    b.ToTable("Bookmarks");
                 });
 
             modelBuilder.Entity("Backend.Models.ClimbingRouteModel", b =>
@@ -99,7 +81,7 @@ namespace Backend.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("RouteModels");
+                    b.ToTable("ClimbingRouteModel");
                 });
 
             modelBuilder.Entity("Backend.Models.Comment", b =>
@@ -181,6 +163,27 @@ namespace Backend.Migrations
                     b.ToTable("Sends");
                 });
 
+            modelBuilder.Entity("Backend.Models.Setter", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Setter");
+                });
+
             modelBuilder.Entity("Backend.Models.Tag", b =>
                 {
                     b.Property<long>("Id")
@@ -222,16 +225,13 @@ namespace Backend.Migrations
                         .WithMany()
                         .HasForeignKey("ModelId");
 
-                    b.Navigation("Model");
-                });
+                    b.HasOne("Backend.Models.Setter", "Setter")
+                        .WithMany()
+                        .HasForeignKey("SetterId");
 
-            modelBuilder.Entity("Backend.Models.ClimbingRouteBookmark", b =>
-                {
-                    b.HasOne("Backend.Models.ClimbingRoute", null)
-                        .WithMany("Bookmarks")
-                        .HasForeignKey("ClimbingRouteId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                    b.Navigation("Model");
+
+                    b.Navigation("Setter");
                 });
 
             modelBuilder.Entity("Backend.Models.Comment", b =>
@@ -278,8 +278,6 @@ namespace Backend.Migrations
 
             modelBuilder.Entity("Backend.Models.ClimbingRoute", b =>
                 {
-                    b.Navigation("Bookmarks");
-
                     b.Navigation("Comments");
 
                     b.Navigation("Likes");

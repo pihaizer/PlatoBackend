@@ -1,5 +1,8 @@
-﻿namespace Backend.Models; 
+﻿using Microsoft.EntityFrameworkCore;
 
+namespace Backend.Models; 
+
+[Index(nameof(UserId), nameof(ClimbingRouteId), IsUnique = true)]
 public class Send {
     public long Id { get; set; }
     

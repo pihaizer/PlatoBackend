@@ -446,3 +446,6 @@ $RECYCLE.BIN/
 !.vscode/tasks.json
 !.vscode/launch.json
 !.vscode/extensions.json
+
+# Firebase service account
+Backend/Properties/serviceAccount.json
