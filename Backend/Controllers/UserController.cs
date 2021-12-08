@@ -58,6 +58,9 @@ public class UserController : ControllerBase {
     public async Task<IActionResult> UpdateUserInfo([FromBody] User userInput) {
         string firebaseId = User.GetFirebaseId();
         if (firebaseId != userInput.FirebaseId) return BadRequest();
+        long userId = await _context.Users.Where(user => user.FirebaseId == firebaseId)
+            .Select(user => user.Id).FirstOrDefaultAsync();
+        userInput.Id = userId;
         
         _context.Users.Update(userInput);
         await _context.SaveChangesAsync();
@@ -107,6 +110,20 @@ public class UserController : ControllerBase {
         var claims = new Dictionary<string, object>
         {
             { ClaimTypes.Role, ClaimRole.Admin }
+        };
+
+        await FirebaseAuth.DefaultInstance.SetCustomUserClaimsAsync(userId, claims);
+        return Ok();
+    }
+
+    [HttpPost("{userId}/RevokeAdmin")]
+    [RequireSuperuser]
+    public async Task<ActionResult> RevokeAdmin(string userId) {
+        User? user = await _context.Users.FirstOrDefaultAsync(us => us.FirebaseId == userId);
+        if (user == null) return NotFound();
+        var claims = new Dictionary<string, object>
+        {
+            { ClaimTypes.Role, ClaimRole.User }
         };
 
         await FirebaseAuth.DefaultInstance.SetCustomUserClaimsAsync(userId, claims);
