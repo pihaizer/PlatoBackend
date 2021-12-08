@@ -20,7 +20,9 @@ public class ClimbingRoutesService : IClimbingRoutesService {
 
     public async Task<List<ClimbingRouteViewModel>> GetAll() {
         List<ClimbingRoute> routes = await _context.Routes
-            .Include(route => route.Tags).ToListAsync();
+            .Include(route => route.Tags)
+            .Include(route => route.Model)
+            .ToListAsync();
 
         var likesCounts = await _context.Likes
             .GroupBy(p => p.ClimbingRouteId)

@@ -66,7 +66,7 @@ public class ClimbingRouteController : ControllerBase {
             like.UserId == userId && like.ClimbingRouteId == routeId);
 
         if (like != null) {
-            return Conflict();
+            return Ok();
         }
 
         _context.Likes.Add(new Like { UserId = userId, ClimbingRouteId = routeId });
@@ -82,7 +82,7 @@ public class ClimbingRouteController : ControllerBase {
             like.UserId == userId && like.ClimbingRouteId == routeId);
 
         if (like == null) {
-            return NotFound();
+            return Ok();
         }
 
         _context.Likes.Remove(like);
@@ -98,7 +98,7 @@ public class ClimbingRouteController : ControllerBase {
             like.UserId == userId && like.ClimbingRouteId == routeId);
 
         if (send != null) {
-            return Conflict();
+            return Ok();
         }
 
         _context.Sends.Add(new Send { UserId = userId, ClimbingRouteId = routeId });
@@ -114,7 +114,7 @@ public class ClimbingRouteController : ControllerBase {
             send.UserId == userId && send.ClimbingRouteId == routeId);
 
         if (send == null) {
-            return NotFound();
+            return Ok();
         }
 
         _context.Sends.Remove(send);
@@ -130,7 +130,7 @@ public class ClimbingRouteController : ControllerBase {
             bookmark.UserId == userId && bookmark.ClimbingRouteId == routeId);
 
         if (bookmark != null) {
-            return Conflict();
+            return Ok();
         }
 
         _context.Bookmarks.Add(new ClimbingRouteBookmark
@@ -147,7 +147,7 @@ public class ClimbingRouteController : ControllerBase {
             bookmark.UserId == userId && bookmark.ClimbingRouteId == routeId);
 
         if (bookmark == null) {
-            return NotFound();
+            return Ok();
         }
 
         _context.Bookmarks.Remove(bookmark);
