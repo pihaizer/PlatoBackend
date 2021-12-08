@@ -89,14 +89,14 @@ public class UserController : ControllerBase {
             .Select(like => like.ClimbingRouteId)
             .ToListAsync();
 
-        List<long> favoriteRoutes = await _context.Likes
+        List<long> bookmarkedRoutes = await _context.Likes
             .Where(like => like.UserId == user.FirebaseId)
             .Select(like => like.ClimbingRouteId)
             .ToListAsync();
 
         user.LikedRouteIds = likedRoutes;
         user.SentRouteIds = sentRoutes;
-        user.FavoriteRouteIds = favoriteRoutes;
+        user.BookmarkedRouteIds = bookmarkedRoutes;
     }
 
     [HttpPost("{userId}/PromoteToAdmin")]

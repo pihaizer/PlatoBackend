@@ -50,9 +50,24 @@ public class ClimbingRouteController : ControllerBase {
     public async Task<ActionResult> DeleteById(long routeId) {
         ClimbingRoute? route = await _context.Routes.FindAsync(routeId);
 
-        if (route == null) return BadRequest();
+        if (route == null) return NotFound();
 
         _context.Routes.Remove(route);
+        await _context.SaveChangesAsync();
+
+        return Ok();
+    }
+
+    
+
+    [HttpPost("{routeId:long}/TakeDown")]
+    [RequireAdmin]
+    public async Task<IActionResult> TakeDown(long routeId) {
+        ClimbingRoute? route = await _context.Routes.FindAsync(routeId);
+
+        if (route == null) return NotFound();
+
+        route.Status = 1;
         await _context.SaveChangesAsync();
 
         return Ok();

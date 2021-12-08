@@ -29,11 +29,11 @@ public class RequireRoleFilter : IAuthorizationFilter {
     }
 
     public void OnAuthorization(AuthorizationFilterContext context) {
+        Console.WriteLine(context.HttpContext.User.GetFirebaseId());
+        Console.WriteLine(string.Join('\n', context.HttpContext.User.Claims));
         bool hasClaim = context.HttpContext.User.Claims
             .Any(c => c.Type == ClaimTypes.Role && _possibleRoles.Contains(c.Value));
         if (!hasClaim) {
-            Console.WriteLine(context.HttpContext.User.GetFirebaseId());
-            Console.WriteLine(string.Join('\n', context.HttpContext.User.Claims));
             context.Result = new ForbidResult();
         }
     }

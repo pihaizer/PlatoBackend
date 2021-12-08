@@ -31,5 +31,5 @@ public class User {
     public virtual ICollection<long>? SentRouteIds { get; set; }
 
     [NotMapped]
-    public virtual ICollection<long>? FavoriteRouteIds { get; set; }
+    public virtual ICollection<long>? BookmarkedRouteIds { get; set; }
 }

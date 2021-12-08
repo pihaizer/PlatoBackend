@@ -95,6 +95,7 @@ public class ClimbingRoutesService : IClimbingRoutesService {
         oldRoute.Color = input.Color;
         oldRoute.Setter = input.Setter;
         oldRoute.ModelId = input.ModelId;
+        oldRoute.InstallDate = DateTimeOffset.FromUnixTimeSeconds(input.InstallDateTimestamp);
 
         if (input.TagIds != null) {
             List<ClimbingRouteTag> newTags = input.TagIds.Select(tag => new ClimbingRouteTag {
