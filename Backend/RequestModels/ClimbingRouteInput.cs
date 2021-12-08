@@ -2,11 +2,12 @@
 
 namespace Backend.InputModels; 
 
-public class ClimbingRoutePostInput {
+public class ClimbingRouteInput {
     public long InstallDateTimestamp { get; set; }
 
     public int Grade { get; set; }
     public string Color { get; set; } = string.Empty;
+    public string? PictureUrl { get; set; }
     public string? PictureBase64 { get; set; }
     
     public long? ModelId { get; set; }
@@ -15,9 +16,11 @@ public class ClimbingRoutePostInput {
 
     public ClimbingRoute ToClimbingRoute() {
         return new ClimbingRoute {
+            InstallDate = DateTimeOffset.FromUnixTimeSeconds(InstallDateTimestamp),
             Grade = Grade,
             Color = Color,
-            Setter = Setter
+            Setter = Setter,
+            ModelId = ModelId
         };
     }
 }

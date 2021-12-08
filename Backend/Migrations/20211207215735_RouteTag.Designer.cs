@@ -3,6 +3,7 @@ using System;
 using Backend.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,10 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Backend.Migrations
 {
     [DbContext(typeof(PlatoContext))]
-    partial class PlatoContextModelSnapshot : ModelSnapshot
+    [Migration("20211207215735_RouteTag")]
+    partial class RouteTag
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -104,15 +106,23 @@ namespace Backend.Migrations
 
             modelBuilder.Entity("Backend.Models.ClimbingRouteTag", b =>
                 {
-                    b.Property<long>("TagId")
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("bigint");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
 
                     b.Property<long>("ClimbingRouteId")
                         .HasColumnType("bigint");
 
-                    b.HasKey("TagId", "ClimbingRouteId");
+                    b.Property<long>("TagId")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("Id");
 
                     b.HasIndex("ClimbingRouteId");
+
+                    b.HasIndex("TagId");
 
                     b.ToTable("RouteTags");
                 });
@@ -245,14 +255,29 @@ namespace Backend.Migrations
                     b.Property<byte>("Sex")
                         .HasColumnType("smallint");
 
-                    b.Property<long?>("StartDateTimestamp")
-                        .HasColumnType("bigint");
+                    b.Property<DateTimeOffset?>("StartDate")
+                        .HasColumnType("timestamp with time zone");
 
                     b.HasKey("Id");
 
                     b.HasIndex("FirebaseId");
 
                     b.ToTable("Users");
+                });
+
+            modelBuilder.Entity("ClimbingRouteTag", b =>
+                {
+                    b.Property<long>("RoutesId")
+                        .HasColumnType("bigint");
+
+                    b.Property<long>("TagsId")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("RoutesId", "TagsId");
+
+                    b.HasIndex("TagsId");
+
+                    b.ToTable("ClimbingRouteTag");
                 });
 
             modelBuilder.Entity("Backend.Models.ClimbingRoute", b =>
@@ -276,7 +301,7 @@ namespace Backend.Migrations
             modelBuilder.Entity("Backend.Models.ClimbingRouteTag", b =>
                 {
                     b.HasOne("Backend.Models.ClimbingRoute", "ClimbingRoute")
-                        .WithMany("Tags")
+                        .WithMany()
                         .HasForeignKey("ClimbingRouteId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -319,6 +344,21 @@ namespace Backend.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("ClimbingRouteTag", b =>
+                {
+                    b.HasOne("Backend.Models.ClimbingRoute", null)
+                        .WithMany()
+                        .HasForeignKey("RoutesId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Backend.Models.Tag", null)
+                        .WithMany()
+                        .HasForeignKey("TagsId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("Backend.Models.ClimbingRoute", b =>
                 {
                     b.Navigation("Bookmarks");
@@ -328,8 +368,6 @@ namespace Backend.Migrations
                     b.Navigation("Likes");
 
                     b.Navigation("Sends");
-
-                    b.Navigation("Tags");
                 });
 #pragma warning restore 612, 618
         }

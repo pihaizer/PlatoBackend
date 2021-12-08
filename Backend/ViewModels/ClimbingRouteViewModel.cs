@@ -19,7 +19,7 @@ public class ClimbingRouteViewModel {
     
     public string? ModelUrl { get; set; }
     
-    public ICollection<TagViewModel>? Tags { get; set; }
+    public ICollection<long>? TagIds { get; set; }
     
     public int LikesCount { get; set; }
     

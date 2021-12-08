@@ -17,8 +17,9 @@ public class ClimbingRoute {
     
     public string? Setter { get; set; }
     
+    public long? ModelId { get; set; }
     public virtual ClimbingRouteModel? Model { get; set; }
-    public virtual ICollection<Tag>? Tags { get; set; }
+    public virtual ICollection<ClimbingRouteTag>? Tags { get; set; }
     
     public virtual ICollection<Like>? Likes { get; set; }
     

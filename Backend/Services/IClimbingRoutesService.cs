@@ -7,5 +7,6 @@ namespace Backend.Services;
 
 public interface IClimbingRoutesService {
     public Task<List<ClimbingRouteViewModel>> GetAll();
-    Task<ActionResult<long>> CreateRoute(ClimbingRoutePostInput input);
+    Task<ActionResult<long>> CreateRoute(ClimbingRouteInput input);
+    Task<IActionResult> UpdateRoute(long id, ClimbingRouteInput input);
 }

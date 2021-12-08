@@ -16,7 +16,7 @@ public class AzureStorageService : IStorageService {
         _blobServiceClient = new BlobServiceClient(connectionString);
     }
 
-    public async Task<string> UploadPictureBase64(string pictureBase64) {
+    public async Task<string> UploadPictureBase64Async(string pictureBase64) {
         string name = Guid.NewGuid() + ".jpg";
 
         BlobContainerClient? container =

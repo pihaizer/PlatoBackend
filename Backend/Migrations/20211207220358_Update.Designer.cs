@@ -3,6 +3,7 @@ using System;
 using Backend.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,10 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Backend.Migrations
 {
     [DbContext(typeof(PlatoContext))]
-    partial class PlatoContextModelSnapshot : ModelSnapshot
+    [Migration("20211207220358_Update")]
+    partial class Update
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -104,15 +106,23 @@ namespace Backend.Migrations
 
             modelBuilder.Entity("Backend.Models.ClimbingRouteTag", b =>
                 {
-                    b.Property<long>("TagId")
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("bigint");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
 
                     b.Property<long>("ClimbingRouteId")
                         .HasColumnType("bigint");
 
-                    b.HasKey("TagId", "ClimbingRouteId");
+                    b.Property<long>("TagId")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("Id");
 
                     b.HasIndex("ClimbingRouteId");
+
+                    b.HasIndex("TagId");
 
                     b.ToTable("RouteTags");
                 });
@@ -245,8 +255,8 @@ namespace Backend.Migrations
                     b.Property<byte>("Sex")
                         .HasColumnType("smallint");
 
-                    b.Property<long?>("StartDateTimestamp")
-                        .HasColumnType("bigint");
+                    b.Property<DateTimeOffset?>("StartDate")
+                        .HasColumnType("timestamp with time zone");
 
                     b.HasKey("Id");
 

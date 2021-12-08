@@ -2,9 +2,11 @@
 using Backend.Models;
 using Backend.ViewModels;
 
+using FirebaseAdmin.Auth;
+
 using Microsoft.EntityFrameworkCore;
 
-namespace Backend.Services; 
+namespace Backend.Services.Impl; 
 
 public class CommentsService : ICommentsService {
     readonly PlatoContext _context;
@@ -20,10 +22,28 @@ public class CommentsService : ICommentsService {
             .Take(count)
             .ToListAsync();
 
-        return comments
-            .Select(comment => new CommentViewModel(comment) {
-                UserName = "MOCK_USERNAME"
-            })
-            .ToList();
+        IEnumerable<string> userIds = comments.Select(comment => comment.UserId).Distinct();
+
+        List<User> usersResult = await _context.Users
+            .Where(user => userIds.Contains(user.FirebaseId))
+            .ToListAsync();
+
+        Dictionary<string, User> users = usersResult.ToDictionary(
+            user => user.FirebaseId,
+            user => user);
+
+        var commentViewModels = new List<CommentViewModel>();
+
+        foreach (Comment comment in comments) {
+            var commentViewModel = new CommentViewModel(comment);
+            
+            User user = users[comment.UserId];
+            commentViewModel.UserName = user.Nickname ?? "Anonymous";
+            commentViewModel.UserPhotoUrl = user.PhotoUrl;
+            
+            commentViewModels.Add(commentViewModel);
+        }
+
+        return commentViewModels;
     }
 }

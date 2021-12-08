@@ -1,13 +1,14 @@
 ﻿using Backend.Context;
+using Backend.Extensions;
 using Backend.InputModels;
 using Backend.Models;
 using Backend.Services;
 using Backend.ViewModels;
 
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-
-using EntityState = Microsoft.EntityFrameworkCore.EntityState;
 
 namespace Backend.Controllers;
 
@@ -32,24 +33,20 @@ public class ClimbingRouteController : ControllerBase {
     }
 
     [HttpPost]
-    public async Task<ActionResult<long>> Post(ClimbingRoutePostInput climbingRouteInput) {
+    [RequireAdmin]
+    public async Task<ActionResult<long>> Post(ClimbingRouteInput climbingRouteInput) {
         return await _routesService.CreateRoute(climbingRouteInput);
     }
 
-    [HttpPut]
-    public async Task<ActionResult> Put(ClimbingRoute climbingRoute) {
-        if (!RouteExists(climbingRoute.Id)) {
-            return NotFound();
-        }
-
-        _context.Entry(climbingRoute).State = EntityState.Modified;
-
-        await _context.SaveChangesAsync();
-
-        return Ok();
+    [HttpPut("{routeId:long}")]
+    [RequireAdmin]
+    public async Task<IActionResult> Put([FromBody] ClimbingRouteInput climbingRoute,
+        [FromRoute] long routeId) {
+        return await _routesService.UpdateRoute(routeId, climbingRoute);
     }
 
     [HttpDelete("{routeId:long}")]
+    [RequireAdmin]
     public async Task<ActionResult> DeleteById(long routeId) {
         ClimbingRoute? route = await _context.Routes.FindAsync(routeId);
 
@@ -62,7 +59,9 @@ public class ClimbingRouteController : ControllerBase {
     }
 
     [HttpPost("{routeId:long}/Like")]
-    public async Task<IActionResult> LikeRoute(long routeId, [FromQuery] string userId) {
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+    public async Task<IActionResult> LikeRoute(long routeId) {
+        string userId = User.GetFirebaseId();
         Like? like = await _context.Likes.FirstOrDefaultAsync(like =>
             like.UserId == userId && like.ClimbingRouteId == routeId);
 
@@ -76,7 +75,9 @@ public class ClimbingRouteController : ControllerBase {
     }
 
     [HttpDelete("{routeId:long}/Like")]
-    public async Task<IActionResult> RemoveLikeRoute(long routeId, [FromQuery] string userId) {
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+    public async Task<IActionResult> RemoveLikeRoute(long routeId) {
+        string userId = User.GetFirebaseId();
         Like? like = await _context.Likes.FirstOrDefaultAsync(like =>
             like.UserId == userId && like.ClimbingRouteId == routeId);
 
@@ -90,7 +91,9 @@ public class ClimbingRouteController : ControllerBase {
     }
 
     [HttpPost("{routeId:long}/Send")]
-    public async Task<IActionResult> SendRoute(long routeId, [FromQuery] string userId) {
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+    public async Task<IActionResult> SendRoute(long routeId) {
+        string userId = User.GetFirebaseId();
         Send? send = await _context.Sends.FirstOrDefaultAsync(like =>
             like.UserId == userId && like.ClimbingRouteId == routeId);
 
@@ -104,7 +107,9 @@ public class ClimbingRouteController : ControllerBase {
     }
 
     [HttpDelete("{routeId:long}/Send")]
-    public async Task<IActionResult> RemoveSendRoute(long routeId, [FromQuery] string userId) {
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+    public async Task<IActionResult> RemoveSendRoute(long routeId) {
+        string userId = User.GetFirebaseId();
         Send? send = await _context.Sends.FirstOrDefaultAsync(send =>
             send.UserId == userId && send.ClimbingRouteId == routeId);
 
@@ -118,7 +123,9 @@ public class ClimbingRouteController : ControllerBase {
     }
 
     [HttpPost("{routeId:long}/Bookmark")]
-    public async Task<IActionResult> BookmarkRoute(long routeId, [FromQuery] string userId) {
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+    public async Task<IActionResult> BookmarkRoute(long routeId) {
+        string userId = User.GetFirebaseId();
         ClimbingRouteBookmark? bookmark = await _context.Bookmarks.FirstOrDefaultAsync(bookmark =>
             bookmark.UserId == userId && bookmark.ClimbingRouteId == routeId);
 
@@ -126,13 +133,16 @@ public class ClimbingRouteController : ControllerBase {
             return Conflict();
         }
 
-        _context.Bookmarks.Add(new ClimbingRouteBookmark { UserId = userId, ClimbingRouteId = routeId });
+        _context.Bookmarks.Add(new ClimbingRouteBookmark
+            { UserId = userId, ClimbingRouteId = routeId });
         await _context.SaveChangesAsync();
         return Ok();
     }
 
     [HttpDelete("{routeId:long}/Bookmark")]
-    public async Task<IActionResult> RemoveBookmarkRoute(long routeId, [FromQuery] string userId) {
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+    public async Task<IActionResult> RemoveBookmarkRoute(long routeId) {
+        string userId = User.GetFirebaseId();
         ClimbingRouteBookmark? bookmark = await _context.Bookmarks.FirstOrDefaultAsync(bookmark =>
             bookmark.UserId == userId && bookmark.ClimbingRouteId == routeId);
 
@@ -152,34 +162,33 @@ public class ClimbingRouteController : ControllerBase {
     }
 
     [HttpPost("{routeId:long}/Comment")]
-    public async Task<IActionResult> CommentRoute(long routeId,
-        [FromQuery] string userId, [FromBody] string message) {
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+    public async Task<IActionResult> CommentRoute(long routeId, [FromBody] string message) {
+        string userId = User.GetFirebaseId();
+        
         _context.Comments.Add(new Comment {
             UserId = userId,
             ClimbingRouteId = routeId,
             Message = message,
             DateTime = DateTimeOffset.UtcNow
         });
-        
+
         await _context.SaveChangesAsync();
         return Ok();
     }
 
     [HttpDelete("{routeId:long}/Comment")]
+    [RequireAdmin]
     public async Task<IActionResult> DeleteCommentById(long routeId, [FromQuery] long commentId) {
         Comment? comment = await _context.Comments.FindAsync(commentId);
-        
+
         if (comment == null) {
             return NotFound();
         }
-        
+
         _context.Comments.Remove(comment);
-        
+
         await _context.SaveChangesAsync();
         return Ok();
-    }
-
-    bool RouteExists(long id) {
-        return _context.Routes.Any(e => e.Id == id);
     }
 }
