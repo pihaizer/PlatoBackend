@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Identity;
 
 namespace Backend.Models;
 
-[Microsoft.EntityFrameworkCore.Index(nameof(FirebaseId))]
+[Microsoft.EntityFrameworkCore.Index(nameof(FirebaseId), IsUnique = true)]
 public class User {
     [JsonIgnore]
     public long Id { get; set; }

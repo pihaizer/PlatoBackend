@@ -20,6 +20,7 @@ public class PlatoContext : DbContext {
     public DbSet<Comment> Comments => Set<Comment>();
     public DbSet<Tag> Tags => Set<Tag>();
     public DbSet<ClimbingRouteModel> RouteModels => Set<ClimbingRouteModel>();
+    public DbSet<News> News => Set<News>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder) {
         base.OnModelCreating(modelBuilder);
