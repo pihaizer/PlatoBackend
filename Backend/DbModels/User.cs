@@ -23,6 +23,10 @@ public class User {
     public byte Sex { get; set; }
 
     public long? StartDateTimestamp { get; set; }
+    
+    // Used to update user profile photo
+    [NotMapped]
+    public string? PhotoBase64 { get; set; }
 
     [NotMapped]
     public virtual ICollection<long>? LikedRouteIds { get; set; }

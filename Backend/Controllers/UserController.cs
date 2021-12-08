@@ -48,6 +48,11 @@ public class UserController : ControllerBase {
             return NotFound();
         }
 
+        if (userInput.PhotoUrl == null && userInput.PhotoBase64 != null) {
+            string url = await _storageService.UploadPictureBase64Async(userInput.PhotoBase64);
+            userInput.PhotoUrl = url;
+        }
+
         _context.Users.Add(userInput);
         await _context.SaveChangesAsync();
         return Ok();
@@ -61,6 +66,11 @@ public class UserController : ControllerBase {
         long userId = await _context.Users.Where(user => user.FirebaseId == firebaseId)
             .Select(user => user.Id).FirstOrDefaultAsync();
         userInput.Id = userId;
+
+        if (userInput.PhotoUrl == null && userInput.PhotoBase64 != null) {
+            string url = await _storageService.UploadPictureBase64Async(userInput.PhotoBase64);
+            userInput.PhotoUrl = url;
+        }
         
         _context.Users.Update(userInput);
         await _context.SaveChangesAsync();
