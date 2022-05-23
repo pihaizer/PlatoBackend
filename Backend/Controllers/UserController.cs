@@ -19,25 +19,25 @@ namespace Backend.Controllers;
 [Route("api/[controller]")]
 public class UserController : ControllerBase {
     readonly PlatoContext _context;
-    readonly IStorageService _storageService;
-
-    public UserController(PlatoContext context, IStorageService storageService) {
+    // readonly IStorageService _storageService;
+    
+    public UserController(PlatoContext context) {
         _context = context;
-        _storageService = storageService;
+        // _storageService = storageService;
     }
-
+    
     [HttpGet("{firebaseId}")]
     public async Task<ActionResult<User>> GetUserData(string firebaseId, [FromQuery] bool fetchRoutes = false) {
         User? user = await _context.Users.FirstOrDefaultAsync(user => user.FirebaseId == firebaseId);
         if (user == null) return NotFound();
-
+    
         if (fetchRoutes) {
             await FetchRoutes(user);
         }
         
         return user;
     }
-
+    
     [HttpPost("Register")]
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     public async Task<IActionResult> Register([FromBody] User userInput) {
@@ -47,17 +47,17 @@ public class UserController : ControllerBase {
         if (firebaseUser == null) {
             return NotFound();
         }
-
+    
         if (userInput.PhotoUrl == null && userInput.PhotoBase64 != null) {
-            string url = await _storageService.UploadPictureBase64Async(userInput.PhotoBase64);
-            userInput.PhotoUrl = url;
+            // string url = await _storageService.UploadPictureBase64Async(userInput.PhotoBase64);
+            // userInput.PhotoUrl = url;
         }
-
+    
         _context.Users.Add(userInput);
         await _context.SaveChangesAsync();
         return Ok();
     }
-
+    
     [HttpPut]
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     public async Task<IActionResult> UpdateUserInfo([FromBody] User userInput) {
@@ -66,52 +66,52 @@ public class UserController : ControllerBase {
         long userId = await _context.Users.Where(user => user.FirebaseId == firebaseId)
             .Select(user => user.Id).FirstOrDefaultAsync();
         userInput.Id = userId;
-
+    
         if (userInput.PhotoUrl == null && userInput.PhotoBase64 != null) {
-            string url = await _storageService.UploadPictureBase64Async(userInput.PhotoBase64);
-            userInput.PhotoUrl = url;
+            // string url = await _storageService.UploadPictureBase64Async(userInput.PhotoBase64);
+            // userInput.PhotoUrl = url;
         }
         
         _context.Users.Update(userInput);
         await _context.SaveChangesAsync();
         return Ok();
     }
-
-    [HttpPut("Photo")]
-    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-    public async Task<ActionResult<string>> UpdateUserPhoto([FromBody] string photoBase64) {
-        User? user = await _context.Users.FindAsync(User.GetFirebaseId());
-
-        if (user == null) return NotFound();
-
-        string photoUrl = await _storageService.UploadPictureBase64Async(photoBase64);
-        user.PhotoUrl = photoUrl;
-        _context.Users.Update(user);
-        await _context.SaveChangesAsync();
-        return photoUrl;
-    }
-
+    
+    // [HttpPut("Photo")]
+    // [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+    // public async Task<ActionResult<string>> UpdateUserPhoto([FromBody] string photoBase64) {
+    //     User? user = await _context.Users.FindAsync(User.GetFirebaseId());
+    //
+    //     if (user == null) return NotFound();
+    //
+    //     string photoUrl = await _storageService.UploadPictureBase64Async(photoBase64);
+    //     user.PhotoUrl = photoUrl;
+    //     _context.Users.Update(user);
+    //     await _context.SaveChangesAsync();
+    //     return photoUrl;
+    // }
+    
     async Task FetchRoutes(User user) {
         List<long> likedRoutes = await _context.Likes
             .Where(like => like.UserId == user.FirebaseId)
             .Select(like => like.ClimbingRouteId)
             .ToListAsync();
-
+    
         List<long> sentRoutes = await _context.Likes
             .Where(like => like.UserId == user.FirebaseId)
             .Select(like => like.ClimbingRouteId)
             .ToListAsync();
-
+    
         List<long> bookmarkedRoutes = await _context.Likes
             .Where(like => like.UserId == user.FirebaseId)
             .Select(like => like.ClimbingRouteId)
             .ToListAsync();
-
+    
         user.LikedRouteIds = likedRoutes;
         user.SentRouteIds = sentRoutes;
         user.BookmarkedRouteIds = bookmarkedRoutes;
     }
-
+    
     [HttpPost("{userId}/PromoteToAdmin")]
     [RequireSuperuser]
     public async Task<ActionResult> PromoteToAdmin(string userId) {
@@ -121,11 +121,11 @@ public class UserController : ControllerBase {
         {
             { ClaimTypes.Role, ClaimRole.Admin }
         };
-
+    
         await FirebaseAuth.DefaultInstance.SetCustomUserClaimsAsync(userId, claims);
         return Ok();
     }
-
+    
     [HttpPost("{userId}/RevokeAdmin")]
     [RequireSuperuser]
     public async Task<ActionResult> RevokeAdmin(string userId) {
@@ -135,7 +135,7 @@ public class UserController : ControllerBase {
         {
             { ClaimTypes.Role, ClaimRole.User }
         };
-
+    
         await FirebaseAuth.DefaultInstance.SetCustomUserClaimsAsync(userId, claims);
         return Ok();
     }

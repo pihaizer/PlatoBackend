@@ -1,17 +1,12 @@
 using System.Security.Claims;
-
 using AspNetCore.Firebase.Authentication.Extensions;
-
 using Backend.Context;
 using Backend.Filters;
 using Backend.Services;
 using Backend.Services.Impl;
-
 using FirebaseAdmin;
 using FirebaseAdmin.Auth;
-
 using Google.Apis.Auth.OAuth2;
-
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -20,24 +15,30 @@ WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
 
-builder.Services.AddDbContext<PlatoContext>(opt => {
-    opt.EnableSensitiveDataLogging();
-    
-    string? connectionString = builder.Environment.IsEnvironment("Development")
-        ? builder.Configuration.GetConnectionString("Plato")
-        : builder.Configuration["POSTGRESQLCONNSTR_Plato"];
-    
-    if (connectionString != null) {
-        opt.UseNpgsql(connectionString);
-    }
-});
+// builder.Services.AddDbContext<PlatoContext>(opt => {
+//     opt.EnableSensitiveDataLogging();
+//     
+//     string? connectionString = builder.Environment.IsEnvironment("Development")
+//         ? builder.Configuration.GetConnectionString("Plato")
+//         : builder.Configuration["POSTGRESQLCONNSTR_Plato"];
+//     
+//     if (connectionString != null) {
+//         opt.UseNpgsql(connectionString);
+//     }
+// });
 
-string azureStorageConnectionString = builder.Configuration["AZURE_STORAGE_CONNECTION_STRING"];
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+builder.Services.AddDbContext<PlatoContext>(options =>
+    options.UseNpgsql(connectionString)
+);
 
+
+// string azureStorageConnectionString = builder.Configuration["AZURE_STORAGE_CONNECTION_STRING"];
+//
 builder.Services.AddTransient<IClimbingRoutesService, ClimbingRoutesService>();
 builder.Services.AddTransient<ICommentsService, CommentsService>();
-builder.Services.AddTransient<IStorageService>(_ =>
-    new AzureStorageService(azureStorageConnectionString));
+// builder.Services.AddTransient<IStorageService>(_ =>
+//     new AzureStorageService(azureStorageConnectionString));
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -58,8 +59,9 @@ builder.Services
         };
     });
 
-FirebaseApp.Create(new AppOptions {
-    Credential = GoogleCredential.FromJson(builder.Configuration["GOOGLE_CREDENTIAL"])
+FirebaseApp.Create(new AppOptions
+{
+    Credential = GoogleCredential.FromFile("./plato.json")
 });
 
 WebApplication app = builder.Build();
@@ -84,7 +86,7 @@ Console.WriteLine(superuser.Uid);
 Console.WriteLine(string.Join('\n', superuser.CustomClaims));
 
 app.UseHttpsRedirection();
-app.UseRouting();   
+app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
