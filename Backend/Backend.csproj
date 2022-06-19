@@ -7,7 +7,6 @@
         <Configurations>Debug;Release</Configurations>
         <Platforms>AnyCPU</Platforms>
       <UserSecretsId>63b731b7-5856-4754-b13b-0754035e16ab</UserSecretsId>
-      <PublicSign>false</PublicSign>
   </PropertyGroup>
 
     <ItemGroup>

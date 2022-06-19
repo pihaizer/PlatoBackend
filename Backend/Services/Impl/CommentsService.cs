@@ -21,19 +21,19 @@ public class CommentsService : ICommentsService {
             .OrderByDescending(comment => comment.DateTime)
             .Take(count)
             .ToListAsync();
-    
+
         IEnumerable<string> userIds = comments.Select(comment => comment.UserId).Distinct();
-    
+
         List<User> usersResult = await _context.Users
             .Where(user => userIds.Contains(user.FirebaseId))
             .ToListAsync();
-    
+
         Dictionary<string, User> users = usersResult.ToDictionary(
             user => user.FirebaseId,
             user => user);
-    
+
         var commentViewModels = new List<CommentViewModel>();
-    
+
         foreach (Comment comment in comments) {
             var commentViewModel = new CommentViewModel(comment);
             
@@ -43,7 +43,7 @@ public class CommentsService : ICommentsService {
             
             commentViewModels.Add(commentViewModel);
         }
-    
+
         return commentViewModels;
     }
 }
