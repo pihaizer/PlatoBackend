@@ -8,6 +8,7 @@ using Azure.Storage.Blobs.Models;
 namespace Backend.Services;
 
 public class AzureStorageService : IStorageService {
+    
     BlobServiceClient _blobServiceClient;
 
     const string _picturesBlobContainerName = "platoroutephotos";

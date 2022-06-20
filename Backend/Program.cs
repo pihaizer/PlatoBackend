@@ -22,33 +22,40 @@ builder.Services.AddControllers();
 
 builder.Services.AddDbContext<PlatoContext>(opt => {
     opt.EnableSensitiveDataLogging();
-    
+
     string? connectionString = builder.Environment.IsEnvironment("Development")
         ? builder.Configuration.GetConnectionString("Plato")
         : builder.Configuration["POSTGRESQLCONNSTR_Plato"];
-    
+
     if (connectionString != null) {
         opt.UseNpgsql(connectionString);
     }
 });
 
-string azureStorageConnectionString = builder.Configuration["AZURE_STORAGE_CONNECTION_STRING"];
+FirebaseApp.Create(new AppOptions {
+    Credential = GoogleCredential.FromJson(builder.Configuration["GOOGLE_CREDENTIAL"])
+});
+
+string superUserId = "gcDyciAzXbaysSBnLgHOJ3ceZZ93";
+string firebaseToken = await FirebaseAuth.DefaultInstance.CreateCustomTokenAsync(superUserId);
+Console.WriteLine(firebaseToken.ReplaceLineEndings(""));
 
 builder.Services.AddTransient<IClimbingRoutesService, ClimbingRoutesService>();
 builder.Services.AddTransient<ICommentsService, CommentsService>();
+
+string firebaseStorageConnectionString = builder.Configuration["FIREBASE_STORAGE_BUCKET"];
 builder.Services.AddTransient<IStorageService>(_ =>
-    new AzureStorageService(azureStorageConnectionString));
+    new FirebaseStorageService(firebaseStorageConnectionString, firebaseToken)
+    );
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 builder.Services
     .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-    .AddJwtBearer(opt =>
-    {
+    .AddJwtBearer(opt => {
         opt.Authority = builder.Configuration["Jwt:Firebase:ValidIssuer"];
-        opt.TokenValidationParameters = new TokenValidationParameters
-        {
+        opt.TokenValidationParameters = new TokenValidationParameters {
             ValidateIssuer = true,
             ValidateAudience = true,
             ValidateLifetime = true,
@@ -58,10 +65,6 @@ builder.Services
         };
     });
 
-FirebaseApp.Create(new AppOptions {
-    Credential = GoogleCredential.FromJson(builder.Configuration["GOOGLE_CREDENTIAL"])
-});
-
 WebApplication app = builder.Build();
 
 // if (app.Environment.IsDevelopment()) {
@@ -69,10 +72,6 @@ app.UseSwagger();
 app.UseSwaggerUI();
 // }
 
-string superUserId = "rC8b1fYw97erLMXdKhS8J3OcdMZ2";
-string token = await FirebaseAuth.DefaultInstance.CreateCustomTokenAsync(superUserId);
-Console.WriteLine(token.ReplaceLineEndings(""));
-//
 var claims = new Dictionary<string, object>
 {
     { ClaimTypes.Role, ClaimRole.SuperUser }
@@ -84,7 +83,7 @@ Console.WriteLine(superuser.Uid);
 Console.WriteLine(string.Join('\n', superuser.CustomClaims));
 
 app.UseHttpsRedirection();
-app.UseRouting();   
+app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();

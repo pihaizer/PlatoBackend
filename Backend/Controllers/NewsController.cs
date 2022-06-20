@@ -3,6 +3,8 @@ using Backend.InputModels;
 using Backend.Models;
 using Backend.Services;
 
+using FirebaseAdmin.Auth;
+
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
@@ -20,8 +22,20 @@ public class NewsController : ControllerBase {
         _storage = storage;
     }
 
+    [HttpGet("Published")]
+    public async Task<List<News>> GetAllPublished([FromQuery] int count = 20) {
+        var currentTimestamp = new DateTimeOffset(DateTime.UtcNow).ToUnixTimeSeconds();
+
+        return await _context.News
+            .Where(news => news.PublishTimestamp <= currentTimestamp)
+            .OrderByDescending(news => news.PublishTimestamp)
+            .Take(count)
+            .ToListAsync();
+    }
+
     [HttpGet]
-    public async Task<List<News>> GetAll([FromQuery] int count = 10) {
+    [RequireAdmin]
+    public async Task<List<News>> GetAll([FromQuery] int count = 20) {
         return await _context.News
             .OrderByDescending(news => news.PublishTimestamp)
             .Take(count)
@@ -29,6 +43,7 @@ public class NewsController : ControllerBase {
     }
 
     [HttpPost]
+    [RequireAdmin]
     public async Task<ActionResult<long>> Post(NewsPostInput newsInput) {
         var news = newsInput.ToNews();
 
@@ -47,6 +62,7 @@ public class NewsController : ControllerBase {
     }
 
     [HttpPut("{newsId:long}")]
+    [RequireAdmin]
     public async Task<ActionResult> Put(NewsPostInput newsInput, long newsId) {
         News? news = await _context.News.FindAsync(newsId);
         if (news == null) return NotFound();
@@ -70,6 +86,7 @@ public class NewsController : ControllerBase {
     }
 
     [HttpDelete("{newsId:long}")]
+    [RequireAdmin]
     public async Task<ActionResult> DeleteById(long newsId) {
         News? news = await _context.News.FindAsync(newsId);
         if (news == null) return NotFound();
