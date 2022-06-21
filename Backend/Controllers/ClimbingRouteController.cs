@@ -58,8 +58,6 @@ public class ClimbingRouteController : ControllerBase {
         return Ok();
     }
 
-    
-
     [HttpPost("{routeId:long}/TakeDown")]
     [RequireAdmin]
     public async Task<IActionResult> TakeDown(long routeId) {

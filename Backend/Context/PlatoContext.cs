@@ -21,10 +21,14 @@ public class PlatoContext : DbContext {
     public DbSet<Tag> Tags => Set<Tag>();
     public DbSet<ClimbingRouteModel> RouteModels => Set<ClimbingRouteModel>();
     public DbSet<News> News => Set<News>();
+    public DbSet<Competition> Competitions => Set<Competition>();
+    public DbSet<Competitor> Competitors => Set<Competitor>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder) {
         base.OnModelCreating(modelBuilder);
         modelBuilder.Entity<ClimbingRouteTag>()
             .HasKey(nameof(ClimbingRouteTag.TagId), nameof(ClimbingRouteTag.ClimbingRouteId));
+        modelBuilder.Entity<Competitor>()
+            .HasKey(nameof(Competitor.UserId), nameof(Competitor.CompetitionId));
     }
 }
